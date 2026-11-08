@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Bailan766 · 个人多合一控制中心</title>
+<link rel="icon" href="https://github.githubassets.com/favicons/favicon.png" type="image/png">
+<style>
+  :root {
+    --bg-dark: #0d1117;
+    --card-bg: #161b22;
+    --border-color: #30363d;
+    --text-main: #f0f6fc;
+    --text-muted: #8b949e;
+    --accent-blue: #58a6ff;
+    --accent-green: #238636;
+    --accent-purple: #8957e5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    background: var(--bg-dark);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Header */
+  header {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+  }
+  .brand-text h1 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .brand-text .sub {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .status-badge {
+    background: rgba(35, 134, 54, 0.15);
+    color: #3fb950;
+    border: 1px solid rgba(63, 185, 80, 0.3);
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    background: #3fb950;
+    border-radius: 50%;
+  }
+  .github-btn {
+    background: #21262d;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: 0.2s;
+  }
+  .github-btn:hover { background: #30363d; border-color: #8b949e; }
+
+  /* Tab Navigation */
+  nav {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 10px;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    flex-shrink: 0;
+  }
+  .nav-btn {
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    transition: 0.15s;
+    user-select: none;
+  }
+  .nav-btn:hover { color: var(--text-main); }
+  .nav-btn.active {
+    color: var(--accent-blue);
+    border-bottom-color: var(--accent-blue);
+    font-weight: 600;
+    background: rgba(88, 166, 255, 0.08);
+  }
+
+  /* Main Stage Container */
+  main {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .view-pane {
+    display: none;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+  }
+  .view-pane.active {
+    display: flex;
+  }
+
+  /* Home Dashboard Grid */
+  #pane-home {
+    overflow-y: auto;
+    padding: 24px 20px;
+  }
+  .hero-banner {
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.1) 0%, rgba(137, 87, 229, 0.1) 100%);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .hero-banner h2 {
+    font-size: 18px;
+    color: var(--text-main);
+    margin-bottom: 6px;
+  }
+  .hero-banner p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+  }
+  .bento-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+  .bento-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-blue);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .card-icon {
+    font-size: 24px;
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .card-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  .card-badge.blue { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
+  .card-badge.purple { background: rgba(137, 87, 229, 0.15); color: #bc8cff; }
+  .card-badge.green { background: rgba(63, 185, 80, 0.15); color: #3fb950; }
+
+  .card-info h3 {
+    font-size: 16px;
+    color: var(--text-main);
+    margin-bottom: 8px;
+  }
+  .card-info p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  .card-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .tag {
+    font-size: 11px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: #8b949e;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+  .card-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .btn-primary {
+    flex: 1;
+    background: #1f6feb;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: 0.15s;
+  }
+  .btn-primary:hover { background: #388bfd; }
+  .btn-secondary {
+    background: #21262d;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.15s;
+  }
+  .btn-secondary:hover { background: #30363d; }
+
+  /* Embedded IFrames with Top Toolbar */
+  .frame-toolbar {
+    background: #161b22;
+    border-bottom: 1px solid var(--border-color);
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+  .frame-url {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: monospace;
+    color: var(--text-muted);
+    font-size: 11px;
+    background: #0d1117;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    max-width: 60%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .frame-btns {
+    display: flex;
+    gap: 8px;
+  }
+  .mini-btn {
+    background: #21262d;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .mini-btn:hover { background: #30363d; }
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    flex: 1;
+    background: var(--bg-dark);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <img class="brand-logo" src="https://avatars.githubusercontent.com/u/107775240?v=4" alt="Bailan766" onerror="this.src='https://github.githubassets.com/favicons/favicon.png'">
+    <div class="brand-text">
+      <h1>Bailan766 · 综合聚合工作台</h1>
+      <div class="sub">ESP32 在线刷机 · 七天成绩查询 · iPhone 4s AI 控制台</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div class="status-badge"><span class="status-dot"></span> GitHub Pages 已同步</div>
+    <a class="github-btn" href="https://github.com/Bailan766" target="_blank">
+      <svg height="14" width="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+      GitHub ↗
+    </a>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-btn active" onclick="switchTab('home')">🧭 聚合主页</div>
+  <div class="nav-btn" onclick="switchTab('esp32')">⚡ ESP32 在线刷机</div>
+  <div class="nav-btn" onclick="switchTab('score')">📊 成绩查询系统</div>
+  <div class="nav-btn" onclick="switchTab('speaker')">📱 iPhone 4s 智能控制台</div>
+</nav>
+
+<main>
+
+  <!-- PANE 1: Home Dashboard -->
+  <div id="pane-home" class="view-pane active">
+    <div class="hero-banner">
+      <h2>🎉 欢迎来到 Bailan766 的专属聚合平台</h2>
+      <p>已将您的三个核心独立应用：<strong>ESP32 Web 固件在线烧录中心</strong>、<strong>七天网络成绩查询系统</strong> 以及 <strong>iPhone 4s 物理 AI 音箱控制中枢</strong> 统一集成在 <code>bailan766.github.io</code> 下。您可以在上方直接内嵌切换，亦可单独使用。</p>
+    </div>
+
+    <div class="bento-grid">
+
+      <!-- Card 1: ESP32 Flasher -->
+      <div class="bento-card">
+        <div>
+          <div class="card-top">
+            <div class="card-icon">⚡</div>
+            <span class="card-badge blue">Web Serial API</span>
+          </div>
+          <div class="card-info">
+            <h3>ESP32 在线固件烧录中心</h3>
+            <p>基于 Edge / Chrome Web Serial 技术，免安装任何 Python 和串口驱动，直接连上 USB 即可选串口一键刷写 CYD Plus 固件。</p>
+          </div>
+          <div class="card-tags">
+            <span class="tag">ESP32-2432S028R-Plus</span>
+            <span class="tag">CYD 黄板</span>
+            <span class="tag">固件烧录</span>
+            <span class="tag">921600 Baud</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-primary" onclick="switchTab('esp32')">👉 在当前页面内嵌打开</button>
+          <a class="btn-secondary" href="https://bailan766.github.io/ESP32-2432S028R-Plus/" target="_blank" title="在新标签页独立打开">新窗口 ↗</a>
+        </div>
+      </div>
+
+      <!-- Card 2: Septnet Score -->
+      <div class="bento-card">
+        <div>
+          <div class="card-top">
+            <div class="card-icon">📊</div>
+            <span class="card-badge purple">SeptnetScore</span>
+          </div>
+          <div class="card-info">
+            <h3>七天网络成绩与学情查询</h3>
+            <p>中小学考试在线查分、单科分数明细、全校与班级排名透视与学情诊断分析平台。</p>
+          </div>
+          <div class="card-tags">
+            <span class="tag">考号查分</span>
+            <span class="tag">排名分析</span>
+            <span class="tag">七天网络 API</span>
+            <span class="tag">学情看板</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-primary" onclick="switchTab('score')">👉 在当前页面内嵌打开</button>
+          <a class="btn-secondary" href="https://bailan766.github.io/SeptnetScore/" target="_blank" title="在新标签页独立打开">新窗口 ↗</a>
+        </div>
+      </div>
+
+      <!-- Card 3: iPhone 4s AI Controller -->
+      <div class="bento-card">
+        <div>
+          <div class="card-top">
+            <div class="card-icon">📱</div>
+            <span class="card-badge green">物理 AI 实体音箱</span>
+          </div>
+          <div class="card-info">
+            <h3>iPhone 4s 智能音箱 & 控制台</h3>
+            <p>接入 Gemini 3.1 智能体大脑与洛雪音乐全网源，真实控制 iPhone 4s 物理扬声器流式点歌、唤醒网易云等实体 App 与终端执行。</p>
+          </div>
+          <div class="card-tags">
+            <span class="tag">洛雪全网音源</span>
+            <span class="tag">Gemini 3.1 Flash-Lite</span>
+            <span class="tag">Apple A5 硬件</span>
+            <span class="tag">GitHub DevTunnel</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-primary" onclick="switchTab('speaker')">👉 在当前页面内嵌打开</button>
+          <a class="btn-secondary" href="https://fg6b8jsk-8080.jpe1.devtunnels.ms" target="_blank" title="在固定外网地址独立打开">外网直达 ↗</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PANE 2: ESP32 IFrame -->
+  <div id="pane-esp32" class="view-pane">
+    <div class="frame-toolbar">
+      <div class="frame-url">🔗 https://bailan766.github.io/ESP32-2432S028R-Plus/</div>
+      <div class="frame-btns">
+        <button class="mini-btn" onclick="document.getElementById('frame-esp32').src='https://bailan766.github.io/ESP32-2432S028R-Plus/'">🔄 刷新</button>
+        <a class="mini-btn" href="https://bailan766.github.io/ESP32-2432S028R-Plus/" target="_blank">新标签页打开 ↗</a>
+      </div>
+    </div>
+    <iframe id="frame-esp32" src="https://bailan766.github.io/ESP32-2432S028R-Plus/"></iframe>
+  </div>
+
+  <!-- PANE 3: Score IFrame -->
+  <div id="pane-score" class="view-pane">
+    <div class="frame-toolbar">
+      <div class="frame-url">🔗 https://bailan766.github.io/SeptnetScore/</div>
+      <div class="frame-btns">
+        <button class="mini-btn" onclick="document.getElementById('frame-score').src='https://bailan766.github.io/SeptnetScore/'">🔄 刷新</button>
+        <a class="mini-btn" href="https://bailan766.github.io/SeptnetScore/" target="_blank">新标签页打开 ↗</a>
+      </div>
+    </div>
+    <iframe id="frame-score" src="https://bailan766.github.io/SeptnetScore/"></iframe>
+  </div>
+
+  <!-- PANE 4: 4s Speaker IFrame -->
+  <div id="pane-speaker" class="view-pane">
+    <div class="frame-toolbar">
+      <div class="frame-url" id="speaker-url-label">🔗 https://fg6b8jsk-8080.jpe1.devtunnels.ms</div>
+      <div class="frame-btns">
+        <button class="mini-btn" onclick="switchSpeakerSource('lan')">切换局域网(LAN)</button>
+        <button class="mini-btn" onclick="switchSpeakerSource('tunnel')">切换外网(Tunnel)</button>
+        <button class="mini-btn" onclick="reloadSpeaker()">🔄 刷新</button>
+        <a class="mini-btn" id="speaker-newtab" href="https://fg6b8jsk-8080.jpe1.devtunnels.ms" target="_blank">独立全屏 ↗</a>
+      </div>
+    </div>
+    <iframe id="frame-speaker" src="https://fg6b8jsk-8080.jpe1.devtunnels.ms"></iframe>
+  </div>
+
+</main>
+
+<script>
+var currentSpeakerUrl = "https://fg6b8jsk-8080.jpe1.devtunnels.ms";
+
+function switchTab(name) {
+  var btns = document.querySelectorAll(".nav-btn");
+  btns.forEach(function(b){ b.classList.remove("active"); });
+  var panes = document.querySelectorAll(".view-pane");
+  panes.forEach(function(p){ p.classList.remove("active"); });
+
+  if(name === "home") {
+    btns[0].classList.add("active");
+    document.getElementById("pane-home").classList.add("active");
+  } else if(name === "esp32") {
+    btns[1].classList.add("active");
+    document.getElementById("pane-esp32").classList.add("active");
+  } else if(name === "score") {
+    btns[2].classList.add("active");
+    document.getElementById("pane-score").classList.add("active");
+  } else if(name === "speaker") {
+    btns[3].classList.add("active");
+    document.getElementById("pane-speaker").classList.add("active");
+  }
+}
+
+function switchSpeakerSource(type) {
+  var frame = document.getElementById("frame-speaker");
+  var label = document.getElementById("speaker-url-label");
+  var newtab = document.getElementById("speaker-newtab");
+  if(type === 'lan') {
+    currentSpeakerUrl = "http://192.168.1.31:8080";
+  } else {
+    currentSpeakerUrl = "https://fg6b8jsk-8080.jpe1.devtunnels.ms";
+  }
+  frame.src = currentSpeakerUrl;
+  label.innerText = "🔗 " + currentSpeakerUrl;
+  newtab.href = currentSpeakerUrl;
+}
+
+function reloadSpeaker() {
+  document.getElementById("frame-speaker").src = currentSpeakerUrl;
+}
+</script>
+
+</body>
+</html>
