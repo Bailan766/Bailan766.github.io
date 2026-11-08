@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Bailan766 · 个人多合一数字指挥舱 // NEXUS</title>
+<title>Bailan766 · 个人控制台</title>
 <link rel="icon" href="https://github.githubassets.com/favicons/favicon.png" type="image/png">
+
 <!-- Three.js (Local first, fallback to CDN) -->
 <script src="./three.min.js"></script>
 <script>
@@ -12,45 +13,37 @@
     document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
   }
 </script>
+
 <style>
   :root {
-    --bg-base: #060913;
-    --bg-surface: rgba(10, 16, 32, 0.72);
-    --bg-surface-hover: rgba(16, 26, 50, 0.85);
-    --border-glow: rgba(0, 240, 255, 0.28);
-    --border-subtle: rgba(255, 255, 255, 0.08);
-    --cyan: #00f0ff;
-    --cyan-glow: rgba(0, 240, 255, 0.45);
-    --purple: #a855f7;
-    --purple-glow: rgba(168, 85, 247, 0.45);
-    --green: #00ff88;
-    --green-glow: rgba(0, 255, 136, 0.45);
-    --pink: #ff007f;
-    --text-primary: #f0f6fc;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    --font-mono: "JetBrains Mono", Consolas, "Fira Code", monospace;
+    --bg-base: #090a0f;
+    --card-bg: rgba(18, 20, 29, 0.7);
+    --card-hover: rgba(24, 27, 40, 0.85);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(255, 255, 255, 0.2);
+    --accent: #3b82f6;
+    --accent-glow: rgba(59, 130, 246, 0.25);
+    --text-main: #f3f4f6;
+    --text-muted: #9ca3af;
+    --text-dim: #6b7280;
+    --font-mono: "SF Mono", Consolas, Menlo, Monaco, monospace;
   }
 
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    -webkit-tap-highlight-color: transparent;
-  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
   body {
     background: var(--bg-base);
-    color: var(--text-primary);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     display: flex;
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
     position: relative;
+    -webkit-font-smoothing: antialiased;
   }
 
-  /* 3D WebGL Canvas Layer */
+  /* Three.js Background Canvas */
   #bg-canvas {
     position: fixed;
     top: 0;
@@ -61,8 +54,8 @@
     pointer-events: none;
   }
 
-  /* Futuristic Grid Scanlines Overlay */
-  .cyber-overlay {
+  /* Subtle vignette gradient */
+  .vignette {
     position: fixed;
     top: 0;
     left: 0;
@@ -70,42 +63,18 @@
     height: 100%;
     z-index: 1;
     pointer-events: none;
-    background: radial-gradient(circle at 50% 20%, rgba(0, 240, 255, 0.06) 0%, transparent 70%),
-                linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px);
-    background-size: 100% 100%, 40px 40px, 40px 40px;
+    background: radial-gradient(circle at 50% 30%, transparent 40%, rgba(9, 10, 15, 0.75) 100%);
   }
 
-  /* HUD Scanline Beam */
-  .cyber-overlay::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-    opacity: 0.35;
-    animation: scanline 8s linear infinite;
-  }
-
-  @keyframes scanline {
-    0% { top: -10px; opacity: 0; }
-    15% { opacity: 0.4; }
-    85% { opacity: 0.4; }
-    100% { top: 100%; opacity: 0; }
-  }
-
-  /* Header Container */
+  /* Header */
   header {
     position: relative;
     z-index: 10;
-    background: rgba(6, 10, 20, 0.75);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border-glow);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), inset 0 -1px 0 rgba(0, 240, 255, 0.15);
-    padding: 10px 20px;
+    background: rgba(12, 14, 21, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -115,82 +84,30 @@
   .brand {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
   }
-
-  .avatar-hud {
-    position: relative;
-    width: 38px;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .avatar-hud::before {
-    content: "";
-    position: absolute;
-    inset: -3px;
-    border-radius: 50%;
-    border: 1px dashed var(--cyan);
-    animation: rotateRing 12s linear infinite;
-    opacity: 0.8;
-  }
-
-  .avatar-hud::after {
-    content: "";
-    position: absolute;
-    inset: -6px;
-    border-radius: 50%;
-    border: 1px solid transparent;
-    border-top-color: var(--purple);
-    border-bottom-color: var(--cyan);
-    animation: rotateRingRev 6s linear infinite;
-    opacity: 0.5;
-  }
-
-  @keyframes rotateRing { 100% { transform: rotate(360deg); } }
-  @keyframes rotateRingRev { 100% { transform: rotate(-360deg); } }
 
   .brand-logo {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
+    border: 1px solid var(--border);
     object-fit: cover;
-    border: 1px solid var(--cyan);
-    box-shadow: 0 0 12px var(--cyan-glow);
   }
 
   .brand-text h1 {
     font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    color: var(--text-primary);
+    font-weight: 600;
+    letter-spacing: -0.2px;
+    color: var(--text-main);
     display: flex;
     align-items: center;
     gap: 8px;
-  }
-
-  .brand-text h1 .nexus-tag {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    padding: 2px 6px;
-    background: linear-gradient(90deg, rgba(0, 240, 255, 0.2), rgba(168, 85, 247, 0.2));
-    border: 1px solid var(--cyan);
-    color: var(--cyan);
-    border-radius: 4px;
-    box-shadow: 0 0 8px rgba(0, 240, 255, 0.25);
-    text-transform: uppercase;
   }
 
   .brand-text .sub {
-    font-size: 11px;
-    color: var(--text-secondary);
-    font-family: var(--font-mono);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 2px;
+    font-size: 12px;
+    color: var(--text-dim);
   }
 
   .header-actions {
@@ -199,133 +116,86 @@
     gap: 12px;
   }
 
-  .sys-clock {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--cyan);
-    background: rgba(0, 240, 255, 0.08);
-    border: 1px solid rgba(0, 240, 255, 0.25);
-    padding: 5px 10px;
-    border-radius: 6px;
-    display: none;
-  }
-
-  @media (min-width: 768px) {
-    .sys-clock { display: block; }
-  }
-
   .status-badge {
-    background: rgba(0, 255, 136, 0.12);
-    color: var(--green);
-    border: 1px solid rgba(0, 255, 136, 0.35);
-    font-size: 11px;
-    font-family: var(--font-mono);
-    padding: 5px 10px;
-    border-radius: 6px;
-    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
+    font-size: 12px;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    padding: 4px 10px;
+    border-radius: 20px;
   }
 
   .status-dot {
-    width: 7px;
-    height: 7px;
-    background: var(--green);
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    box-shadow: 0 0 8px var(--green);
-    animation: pulseDot 2s ease-in-out infinite;
+    background: #10b981;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
   }
 
-  @keyframes pulseDot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.85); }
-  }
-
-  .hud-btn {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--border-subtle);
-    color: var(--text-primary);
+  .github-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    color: var(--text-main);
     text-decoration: none;
     font-size: 12px;
-    font-family: var(--font-mono);
     padding: 5px 12px;
     border-radius: 6px;
     display: flex;
     align-items: center;
     gap: 6px;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    cursor: pointer;
+    transition: 0.15s;
   }
 
-  .hud-btn:hover {
-    background: rgba(0, 240, 255, 0.15);
-    border-color: var(--cyan);
-    color: #fff;
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
-    transform: translateY(-1px);
+  .github-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--border-hover);
   }
 
   /* Nav Tabs */
   nav {
     position: relative;
     z-index: 10;
-    background: rgba(8, 12, 24, 0.65);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border-subtle);
-    padding: 4px 16px;
+    background: rgba(12, 14, 21, 0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
     display: flex;
-    gap: 6px;
+    gap: 4px;
     overflow-x: auto;
     flex-shrink: 0;
   }
 
   .nav-btn {
-    padding: 9px 16px;
+    padding: 10px 16px;
     font-size: 13px;
     font-weight: 500;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     cursor: pointer;
-    border-radius: 6px;
-    border: 1px solid transparent;
+    border-bottom: 2px solid transparent;
     display: flex;
     align-items: center;
     gap: 8px;
     white-space: nowrap;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.15s ease;
     user-select: none;
-    position: relative;
-  }
-
-  .nav-btn .tab-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--text-muted);
-    transition: all 0.2s;
   }
 
   .nav-btn:hover {
-    color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-main);
   }
 
   .nav-btn.active {
-    color: var(--cyan);
-    background: rgba(0, 240, 255, 0.1);
-    border-color: rgba(0, 240, 255, 0.35);
+    color: #fff;
+    border-bottom-color: var(--accent);
     font-weight: 600;
-    box-shadow: 0 0 20px rgba(0, 240, 255, 0.15), inset 0 0 10px rgba(0, 240, 255, 0.1);
   }
 
-  .nav-btn.active .tab-dot {
-    background: var(--cyan);
-    box-shadow: 0 0 8px var(--cyan);
-  }
-
-  /* Main Container */
+  /* Main Workspace */
   main {
     position: relative;
     z-index: 5;
@@ -349,266 +219,129 @@
   /* Dashboard View */
   #pane-home {
     overflow-y: auto;
-    padding: 24px 20px 40px;
+    padding: 32px 24px 48px;
     scrollbar-width: thin;
-    scrollbar-color: rgba(0, 240, 255, 0.3) transparent;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
   }
 
-  #pane-home::-webkit-scrollbar {
-    width: 6px;
-  }
+  #pane-home::-webkit-scrollbar { width: 6px; }
   #pane-home::-webkit-scrollbar-thumb {
-    background: rgba(0, 240, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15);
     border-radius: 3px;
   }
 
-  /* Hero Section */
-  .hero-container {
-    position: relative;
-    max-width: 1280px;
-    margin: 0 auto 28px;
-    background: linear-gradient(135deg, rgba(0, 240, 255, 0.08) 0%, rgba(168, 85, 247, 0.08) 50%, rgba(10, 16, 32, 0.6) 100%);
-    border: 1px solid var(--border-glow);
-    border-radius: 16px;
+  .hero-banner {
+    max-width: 1120px;
+    margin: 0 auto 32px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
     padding: 24px 28px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 30px rgba(0, 240, 255, 0.05);
-    overflow: hidden;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
 
-  /* HUD Corner Brackets */
-  .hud-bracket {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    border-color: var(--cyan);
-    border-style: solid;
-    pointer-events: none;
-    opacity: 0.8;
-  }
-  .hud-bracket.tl { top: 6px; left: 6px; border-width: 2px 0 0 2px; }
-  .hud-bracket.tr { top: 6px; right: 6px; border-width: 2px 2px 0 0; }
-  .hud-bracket.bl { bottom: 6px; left: 6px; border-width: 0 0 2px 2px; }
-  .hud-bracket.br { bottom: 6px; right: 6px; border-width: 0 2px 2px 0; }
-
-  .hero-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 14px;
-    margin-bottom: 12px;
-  }
-
-  .hero-title-group {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  .hero-title {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-    background: linear-gradient(90deg, #ffffff, var(--cyan) 70%, var(--purple) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .hero-code {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--cyan);
-    background: rgba(0, 240, 255, 0.12);
-    border: 1px solid rgba(0, 240, 255, 0.3);
-    padding: 2px 8px;
-    border-radius: 4px;
-  }
-
-  .hero-desc {
-    color: var(--text-secondary);
-    font-size: 13px;
-    line-height: 1.7;
-    max-width: 900px;
-    margin-bottom: 18px;
-  }
-
-  /* Live HUD System Metrics Strip */
-  .metrics-strip {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-    padding-top: 14px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  .metric-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 8px;
-    padding: 8px 12px;
-  }
-
-  .metric-icon {
-    font-size: 16px;
-    width: 28px;
-    height: 28px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  .metric-content {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .metric-label {
-    font-size: 10px;
-    color: var(--text-muted);
-    font-family: var(--font-mono);
-    text-transform: uppercase;
-  }
-
-  .metric-val {
-    font-size: 12px;
-    color: var(--text-primary);
+  .hero-banner h2 {
+    font-size: 20px;
     font-weight: 600;
-    font-family: var(--font-mono);
+    letter-spacing: -0.3px;
+    margin-bottom: 8px;
+    color: #fff;
   }
 
-  /* Bento 3D Grid */
-  .bento-grid {
+  .hero-banner p {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 820px;
+  }
+
+  /* Cards Grid (Linear / Raycast Style) */
+  .grid-container {
+    max-width: 1120px;
+    margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 20px;
-    max-width: 1280px;
-    margin: 0 auto;
-    perspective: 1200px;
   }
 
-  /* Bento 3D Tilt Card */
-  .bento-card {
-    position: relative;
-    background: var(--bg-surface);
-    border: 1px solid var(--border-glow);
-    border-radius: 16px;
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
     padding: 24px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: transform 0.25s ease-out, border-color 0.25s, box-shadow 0.25s;
-    transform-style: preserve-3d;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s;
+    position: relative;
     overflow: hidden;
   }
 
-  /* Specular Mouse Glare */
-  .bento-card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0, 240, 255, 0.15) 0%, transparent 65%);
-    opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-hover);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent-glow);
   }
 
-  .bento-card:hover::before {
-    opacity: 1;
-  }
-
-  .bento-card:hover {
-    border-color: var(--cyan);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(0, 240, 255, 0.25);
-  }
-
-  .card-top {
+  .card-header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     margin-bottom: 16px;
   }
 
-  .card-icon-box {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
+  .card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    border: 1px solid;
-    position: relative;
+    font-size: 20px;
   }
 
-  .card-icon-box.cyan {
-    background: rgba(0, 240, 255, 0.12);
-    border-color: rgba(0, 240, 255, 0.4);
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
-  }
-
-  .card-icon-box.purple {
-    background: rgba(168, 85, 247, 0.12);
-    border-color: rgba(168, 85, 247, 0.4);
-    box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
-  }
-
-  .card-icon-box.green {
-    background: rgba(0, 255, 136, 0.12);
-    border-color: rgba(0, 255, 136, 0.4);
-    box-shadow: 0 0 15px rgba(0, 255, 136, 0.25);
-  }
-
-  .card-badge {
-    font-family: var(--font-mono);
-    font-size: 10px;
+  .badge {
+    font-size: 11px;
+    font-weight: 500;
     padding: 3px 8px;
     border-radius: 6px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border: 1px solid;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
   }
 
-  .card-badge.cyan {
-    background: rgba(0, 240, 255, 0.1);
-    color: var(--cyan);
-    border-color: rgba(0, 240, 255, 0.35);
+  .badge.blue {
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+    border-color: rgba(59, 130, 246, 0.25);
   }
-
-  .card-badge.purple {
+  .badge.purple {
     background: rgba(168, 85, 247, 0.1);
     color: #c084fc;
-    border-color: rgba(168, 85, 247, 0.35);
+    border-color: rgba(168, 85, 247, 0.25);
+  }
+  .badge.emerald {
+    background: rgba(16, 185, 129, 0.1);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.25);
   }
 
-  .card-badge.green {
-    background: rgba(0, 255, 136, 0.1);
-    color: var(--green);
-    border-color: rgba(0, 255, 136, 0.35);
-  }
-
-  .card-info h3 {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--text-primary);
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
     margin-bottom: 8px;
-    letter-spacing: 0.3px;
+    letter-spacing: -0.2px;
   }
 
-  .card-info p {
+  .card-desc {
     font-size: 13px;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     line-height: 1.6;
     margin-bottom: 16px;
   }
@@ -617,41 +350,33 @@
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
   }
 
   .tag {
     font-size: 11px;
     font-family: var(--font-mono);
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: var(--text-secondary);
-    padding: 3px 8px;
+    color: var(--text-dim);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 2px 8px;
     border-radius: 4px;
-    transition: 0.2s;
-  }
-
-  .bento-card:hover .tag {
-    border-color: rgba(0, 240, 255, 0.2);
-    color: var(--text-primary);
   }
 
   .card-actions {
     display: flex;
     gap: 10px;
-    position: relative;
-    z-index: 2;
   }
 
   .btn-primary {
     flex: 1;
-    background: linear-gradient(135deg, rgba(0, 240, 255, 0.8) 0%, rgba(0, 162, 255, 0.8) 100%);
-    color: #030814;
+    background: #2563eb;
+    color: #fff;
     border: none;
-    padding: 10px 14px;
+    padding: 9px 14px;
     border-radius: 8px;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 500;
     cursor: pointer;
     text-align: center;
     text-decoration: none;
@@ -659,52 +384,46 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
-    transition: all 0.2s;
+    transition: 0.15s;
   }
 
   .btn-primary:hover {
-    background: linear-gradient(135deg, #00f0ff 0%, #38bdf8 100%);
-    box-shadow: 0 6px 20px rgba(0, 240, 255, 0.5);
-    transform: translateY(-1px);
+    background: #1d4ed8;
   }
 
   .btn-secondary {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-glow);
-    color: var(--text-primary);
-    padding: 10px 14px;
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 9px 14px;
     border-radius: 8px;
     font-size: 13px;
-    font-family: var(--font-mono);
     font-weight: 500;
     cursor: pointer;
     text-decoration: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition: 0.15s;
   }
 
   .btn-secondary:hover {
-    background: rgba(0, 240, 255, 0.15);
-    border-color: var(--cyan);
-    color: #fff;
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--border-hover);
   }
 
-  /* Embedded IFrames & Toolbar */
+  /* Embedded IFrames with Top Toolbar */
   .frame-toolbar {
-    background: rgba(6, 10, 20, 0.8);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border-glow);
+    background: rgba(12, 14, 21, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
     padding: 8px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     font-size: 12px;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     flex-shrink: 0;
   }
 
@@ -713,24 +432,16 @@
     align-items: center;
     gap: 8px;
     font-family: var(--font-mono);
-    color: var(--cyan);
+    color: var(--text-muted);
     font-size: 11px;
-    background: rgba(0, 0, 0, 0.4);
-    padding: 5px 12px;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 4px 10px;
     border-radius: 6px;
-    border: 1px solid rgba(0, 240, 255, 0.25);
-    max-width: 65%;
+    border: 1px solid var(--border);
+    max-width: 60%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  .frame-pulse {
-    width: 6px;
-    height: 6px;
-    background: var(--cyan);
-    border-radius: 50%;
-    box-shadow: 0 0 6px var(--cyan);
   }
 
   .frame-btns {
@@ -740,22 +451,19 @@
 
   .mini-btn {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: var(--text-primary);
+    border: 1px solid var(--border);
+    color: var(--text-main);
     font-size: 11px;
-    font-family: var(--font-mono);
-    padding: 5px 10px;
+    padding: 4px 10px;
     border-radius: 6px;
     text-decoration: none;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: 0.15s;
   }
 
   .mini-btn:hover {
-    background: rgba(0, 240, 255, 0.15);
-    border-color: var(--cyan);
-    color: #fff;
-    box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--border-hover);
   }
 
   iframe {
@@ -769,192 +477,109 @@
 </head>
 <body>
 
-<!-- Three.js 3D Background Canvas -->
+<!-- Three.js Subtle Dark Interactive 3D Mesh -->
 <canvas id="bg-canvas"></canvas>
+<div class="vignette"></div>
 
-<!-- Cyber Scanline Overlay -->
-<div class="cyber-overlay"></div>
-
-<!-- Top Navigation HUD -->
+<!-- Header -->
 <header>
   <div class="brand">
-    <div class="avatar-hud">
-      <img class="brand-logo" src="https://avatars.githubusercontent.com/u/107775240?v=4" alt="Bailan766" onerror="this.src='https://github.githubassets.com/favicons/favicon.png'">
-    </div>
+    <img class="brand-logo" src="https://avatars.githubusercontent.com/u/107775240?v=4" alt="Bailan766" onerror="this.src='https://github.githubassets.com/favicons/favicon.png'">
     <div class="brand-text">
-      <h1>BAILAN766 <span class="nexus-tag">NEXUS CORE</span></h1>
-      <div class="sub">
-        <span>CYBER PROTOCOL // MULTI-SYSTEM MATRIX</span>
-      </div>
+      <h1>Bailan766</h1>
+      <div class="sub">个人聚合控制台</div>
     </div>
   </div>
 
   <div class="header-actions">
-    <div id="live-clock" class="sys-clock">UTC 00:00:00</div>
-    <div class="status-badge"><span class="status-dot"></span> 节点同步正常</div>
-    <button class="hud-btn" id="sfx-toggle" onclick="toggleAudio()" title="切换未来感操作音效">🔊 音效: 开</button>
-    <a class="hud-btn" href="https://github.com/Bailan766" target="_blank" rel="noopener">
+    <div class="status-badge"><span class="status-dot"></span> GitHub Pages 正常</div>
+    <a class="github-btn" href="https://github.com/Bailan766" target="_blank" rel="noopener">
       <svg height="13" width="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
       GitHub ↗
     </a>
   </div>
 </header>
 
-<!-- System Navigation Tabs -->
+<!-- Navigation Tabs -->
 <nav>
-  <div class="nav-btn active" onclick="switchTab('home')">
-    <span class="tab-dot"></span> 🧭 聚合主屏
-  </div>
-  <div class="nav-btn" onclick="switchTab('esp32')">
-    <span class="tab-dot"></span> ⚡ ESP32 固件烧录
-  </div>
-  <div class="nav-btn" onclick="switchTab('score')">
-    <span class="tab-dot"></span> 📊 七天成绩系统
-  </div>
-  <div class="nav-btn" onclick="switchTab('speaker')">
-    <span class="tab-dot"></span> 📱 iPhone 4s 物理智能体
-  </div>
+  <div class="nav-btn active" onclick="switchTab('home')">🧭 概览</div>
+  <div class="nav-btn" onclick="switchTab('esp32')">⚡ ESP32 固件烧录</div>
+  <div class="nav-btn" onclick="switchTab('score')">📊 七天学堂查分</div>
+  <div class="nav-btn" onclick="switchTab('speaker')">📱 iPhone 4s 控制台</div>
 </nav>
 
-<!-- Main Workspace -->
+<!-- Main Stage -->
 <main>
 
-  <!-- PANE 1: Home Dashboard -->
+  <!-- PANE 1: Overview Dashboard -->
   <div id="pane-home" class="view-pane active">
 
-    <!-- Hero Glass Container -->
-    <div class="hero-container">
-      <div class="hud-bracket tl"></div>
-      <div class="hud-bracket tr"></div>
-      <div class="hud-bracket bl"></div>
-      <div class="hud-bracket br"></div>
-
-      <div class="hero-header">
-        <div class="hero-title-group">
-          <h2 class="hero-title">Bailan766 · 综合聚合工作台</h2>
-          <span class="hero-code">VER 2.5 // PRODUCTION</span>
-        </div>
-      </div>
-
-      <p class="hero-desc">
-        欢迎登入个人数字中枢。本平台深度整合三大业务模块：基于 Web Serial 的 <strong>ESP32 在线极速烧录中心</strong>、面向学情诊断的 <strong>七天网络成绩分析系统</strong>，以及由 <strong>Gemini 3.1 实体物理驱动的 iPhone 4s 智能音箱控制台</strong>。支持多通道快速切换与外网安全直连。
-      </p>
-
-      <div class="metrics-strip">
-        <div class="metric-item">
-          <div class="metric-icon">🌐</div>
-          <div class="metric-content">
-            <span class="metric-label">HOST PORTAL</span>
-            <span class="metric-val">bailan766.github.io</span>
-          </div>
-        </div>
-        <div class="metric-item">
-          <div class="metric-icon">⚡</div>
-          <div class="metric-content">
-            <span class="metric-label">SERIAL PROTOCOL</span>
-            <span class="metric-val">Web Serial 921600</span>
-          </div>
-        </div>
-        <div class="metric-item">
-          <div class="metric-icon">🧠</div>
-          <div class="metric-content">
-            <span class="metric-label">NEURAL ENGINE</span>
-            <span class="metric-val">Gemini 3.1 Flash-Lite</span>
-          </div>
-        </div>
-        <div class="metric-item">
-          <div class="metric-icon">🛡️</div>
-          <div class="metric-content">
-            <span class="metric-label">TUNNEL SECURITY</span>
-            <span class="metric-val">DevTunnel TLS 1.3</span>
-          </div>
-        </div>
-      </div>
+    <div class="hero-banner">
+      <h2>聚合工作台</h2>
+      <p>统一管理常用项目与硬件控制入口。支持当前页多任务内嵌切换与独立视窗运行。</p>
     </div>
 
-    <!-- Bento 3D Grid -->
-    <div class="bento-grid">
+    <div class="grid-container">
 
       <!-- Card 1: ESP32 Flasher -->
-      <div class="bento-card" data-tilt>
-        <div class="hud-bracket tl"></div>
-        <div class="hud-bracket tr"></div>
-        <div class="hud-bracket bl"></div>
-        <div class="hud-bracket br"></div>
+      <div class="card">
         <div>
-          <div class="card-top">
-            <div class="card-icon-box cyan">⚡</div>
-            <span class="card-badge cyan">Web Serial API</span>
+          <div class="card-header">
+            <div class="card-icon">⚡</div>
+            <span class="badge blue">Web Serial</span>
           </div>
-          <div class="card-info">
-            <h3>ESP32 在线固件烧录中心</h3>
-            <p>基于 Edge / Chrome 原生串口通道，无需在电脑上配置 Python 环境或安装烧录工具，插上 USB 即可免驱极速烧录 CYD Plus 固件。</p>
-          </div>
+          <h3 class="card-title">ESP32 在线固件烧录</h3>
+          <p class="card-desc">基于浏览器原生 Web Serial API，免装 Python 与驱动环境，USB 直连一键烧录 CYD Plus 固件。</p>
           <div class="card-tags">
-            <span class="tag">ESP32-2432S028R-Plus</span>
+            <span class="tag">ESP32-2432S028R</span>
             <span class="tag">CYD 黄板</span>
-            <span class="tag">串口烧录</span>
             <span class="tag">921600 Baud</span>
           </div>
         </div>
         <div class="card-actions">
-          <button class="btn-primary" onclick="switchTab('esp32')">👉 启动内嵌控制台</button>
-          <a class="btn-secondary" href="https://bailan766.github.io/ESP32-2432S028R-Plus/" target="_blank" rel="noopener">新窗口 ↗</a>
+          <button class="btn-primary" onclick="switchTab('esp32')">内嵌打开</button>
+          <a class="btn-secondary" href="https://bailan766.github.io/ESP32-2432S028R-Plus/" target="_blank" rel="noopener">独立窗口 ↗</a>
         </div>
       </div>
 
       <!-- Card 2: Septnet Score -->
-      <div class="bento-card" data-tilt>
-        <div class="hud-bracket tl"></div>
-        <div class="hud-bracket tr"></div>
-        <div class="hud-bracket bl"></div>
-        <div class="hud-bracket br"></div>
+      <div class="card">
         <div>
-          <div class="card-top">
-            <div class="card-icon-box purple">📊</div>
-            <span class="card-badge purple">SeptnetScore</span>
+          <div class="card-header">
+            <div class="card-icon">📊</div>
+            <span class="badge purple">SeptnetScore</span>
           </div>
-          <div class="card-info">
-            <h3>七天网络成绩与学情查询</h3>
-            <p>中小学阶段考试成绩即时透视平台，一键查询单科得分明细、全校与班级排名透视，以及多维度学情薄弱项诊断分析。</p>
-          </div>
+          <h3 class="card-title">七天学堂成绩分析</h3>
+          <p class="card-desc">全科分数小题明细查询、学校与班级排名透视、赋分转换及多维度学情分析看板。</p>
           <div class="card-tags">
-            <span class="tag">考号查分</span>
-            <span class="tag">排名透视</span>
-            <span class="tag">七天网络 API</span>
-            <span class="tag">学情诊断</span>
+            <span class="tag">纯前端直连</span>
+            <span class="tag">年级真实排名</span>
+            <span class="tag">赋分透视</span>
           </div>
         </div>
         <div class="card-actions">
-          <button class="btn-primary" onclick="switchTab('score')">👉 启动内嵌控制台</button>
-          <a class="btn-secondary" href="https://bailan766.github.io/SeptnetScore/" target="_blank" rel="noopener">新窗口 ↗</a>
+          <button class="btn-primary" onclick="switchTab('score')">内嵌打开</button>
+          <a class="btn-secondary" href="https://bailan766.github.io/SeptnetScore/" target="_blank" rel="noopener">独立窗口 ↗</a>
         </div>
       </div>
 
       <!-- Card 3: iPhone 4s AI Controller -->
-      <div class="bento-card" data-tilt>
-        <div class="hud-bracket tl"></div>
-        <div class="hud-bracket tr"></div>
-        <div class="hud-bracket bl"></div>
-        <div class="hud-bracket br"></div>
+      <div class="card">
         <div>
-          <div class="card-top">
-            <div class="card-icon-box green">📱</div>
-            <span class="card-badge green">Gemini 3.1 实体音箱</span>
+          <div class="card-header">
+            <div class="card-icon">📱</div>
+            <span class="badge emerald">Gemini 3.1</span>
           </div>
-          <div class="card-info">
-            <h3>iPhone 4s 智能音箱 & 控制台</h3>
-            <p>赋予经典 Apple A5 硬件全新 AI 生命力！集成洛雪全网音乐源流式点歌，支持原生相机物理唤醒、实时天气与联网搜索及锁屏控制。</p>
-          </div>
+          <h3 class="card-title">iPhone 4s 物理智能体</h3>
+          <p class="card-desc">接入 Gemini 3.1 Flash-Lite 与全网洛雪音源，物理操控 Apple A5 扬声器流式点歌、唤醒系统相机及远程锁屏。</p>
           <div class="card-tags">
-            <span class="tag">洛雪全网音源</span>
-            <span class="tag">Gemini 3.1 实体交互</span>
-            <span class="tag">相机唤起/锁屏</span>
-            <span class="tag">固定外网 DevTunnel</span>
+            <span class="tag">洛雪音乐源</span>
+            <span class="tag">硬件 Tool Calling</span>
+            <span class="tag">DevTunnel 直连</span>
           </div>
         </div>
         <div class="card-actions">
-          <button class="btn-primary" onclick="switchTab('speaker')">👉 开启实体交互</button>
+          <button class="btn-primary" onclick="switchTab('speaker')">内嵌打开</button>
           <a class="btn-secondary" href="https://fg6b8jsk-8080.jpe1.devtunnels.ms" target="_blank" rel="noopener">外网直达 ↗</a>
         </div>
       </div>
@@ -967,12 +592,11 @@
   <div id="pane-esp32" class="view-pane">
     <div class="frame-toolbar">
       <div class="frame-url-box">
-        <span class="frame-pulse"></span>
         <span>https://bailan766.github.io/ESP32-2432S028R-Plus/</span>
       </div>
       <div class="frame-btns">
-        <button class="mini-btn" onclick="document.getElementById('frame-esp32').src='https://bailan766.github.io/ESP32-2432S028R-Plus/'">🔄 重新载入</button>
-        <a class="mini-btn" href="https://bailan766.github.io/ESP32-2432S028R-Plus/" target="_blank" rel="noopener">新窗口全屏 ↗</a>
+        <button class="mini-btn" onclick="document.getElementById('frame-esp32').src='https://bailan766.github.io/ESP32-2432S028R-Plus/'">重新加载</button>
+        <a class="mini-btn" href="https://bailan766.github.io/ESP32-2432S028R-Plus/" target="_blank" rel="noopener">全屏打开 ↗</a>
       </div>
     </div>
     <iframe id="frame-esp32" src="https://bailan766.github.io/ESP32-2432S028R-Plus/"></iframe>
@@ -982,12 +606,11 @@
   <div id="pane-score" class="view-pane">
     <div class="frame-toolbar">
       <div class="frame-url-box">
-        <span class="frame-pulse"></span>
         <span>https://bailan766.github.io/SeptnetScore/</span>
       </div>
       <div class="frame-btns">
-        <button class="mini-btn" onclick="document.getElementById('frame-score').src='https://bailan766.github.io/SeptnetScore/'">🔄 重新载入</button>
-        <a class="mini-btn" href="https://bailan766.github.io/SeptnetScore/" target="_blank" rel="noopener">新窗口全屏 ↗</a>
+        <button class="mini-btn" onclick="document.getElementById('frame-score').src='https://bailan766.github.io/SeptnetScore/'">重新加载</button>
+        <a class="mini-btn" href="https://bailan766.github.io/SeptnetScore/" target="_blank" rel="noopener">全屏打开 ↗</a>
       </div>
     </div>
     <iframe id="frame-score" src="https://bailan766.github.io/SeptnetScore/"></iframe>
@@ -997,14 +620,13 @@
   <div id="pane-speaker" class="view-pane">
     <div class="frame-toolbar">
       <div class="frame-url-box" id="speaker-url-label">
-        <span class="frame-pulse"></span>
         <span id="speaker-url-text">https://fg6b8jsk-8080.jpe1.devtunnels.ms</span>
       </div>
       <div class="frame-btns">
         <button class="mini-btn" onclick="switchSpeakerSource('lan')">局域网 (LAN)</button>
         <button class="mini-btn" onclick="switchSpeakerSource('tunnel')">外网隧道 (Tunnel)</button>
-        <button class="mini-btn" onclick="reloadSpeaker()">🔄 重新载入</button>
-        <a class="mini-btn" id="speaker-newtab" href="https://fg6b8jsk-8080.jpe1.devtunnels.ms" target="_blank" rel="noopener">新窗口全屏 ↗</a>
+        <button class="mini-btn" onclick="reloadSpeaker()">重新加载</button>
+        <a class="mini-btn" id="speaker-newtab" href="https://fg6b8jsk-8080.jpe1.devtunnels.ms" target="_blank" rel="noopener">全屏打开 ↗</a>
       </div>
     </div>
     <iframe id="frame-speaker" src="https://fg6b8jsk-8080.jpe1.devtunnels.ms"></iframe>
@@ -1012,88 +634,10 @@
 
 </main>
 
-<!-- Interactive Logic, Audio Synthesis & Three.js 3D Engine -->
 <script>
-/* ==========================================================
-   1. Sci-Fi Web Audio API Synthesizer (Zero Dependencies)
-   ========================================================== */
-var audioEnabled = true;
-var audioCtx = null;
-
-function initAudio() {
-  if (!audioCtx) {
-    try {
-      var AudioContext = window.AudioContext || window.webkitAudioContext;
-      audioCtx = new AudioContext();
-    } catch(e) {}
-  }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
-}
-
-function playCyberSfx(type) {
-  if (!audioEnabled) return;
-  initAudio();
-  if (!audioCtx) return;
-
-  var osc = audioCtx.createOscillator();
-  var gain = audioCtx.createGain();
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-
-  var now = audioCtx.currentTime;
-
-  if (type === 'hover') {
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(800, now);
-    osc.frequency.exponentialRampToValueAtTime(1400, now + 0.05);
-    gain.gain.setValueAtTime(0.015, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-    osc.start(now);
-    osc.stop(now + 0.05);
-  } else if (type === 'click') {
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(450, now);
-    osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
-    gain.gain.setValueAtTime(0.04, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-    osc.start(now);
-    osc.stop(now + 0.08);
-  } else if (type === 'switch') {
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(600, now);
-    osc.frequency.linearRampToValueAtTime(1200, now + 0.12);
-    gain.gain.setValueAtTime(0.03, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-    osc.start(now);
-    osc.stop(now + 0.12);
-  }
-}
-
-function toggleAudio() {
-  audioEnabled = !audioEnabled;
-  var btn = document.getElementById('sfx-toggle');
-  if (audioEnabled) {
-    btn.innerText = '🔊 音效: 开';
-    playCyberSfx('click');
-  } else {
-    btn.innerText = '🔇 音效: 关';
-  }
-}
-
-// Attach hover sound to buttons
-document.querySelectorAll('button, .nav-btn, .bento-card, .btn-primary, .btn-secondary, .hud-btn').forEach(function(el) {
-  el.addEventListener('mouseenter', function() { playCyberSfx('hover'); });
-});
-
-/* ==========================================================
-   2. Tab Switching & Speaker Source
-   ========================================================== */
 var currentSpeakerUrl = "https://fg6b8jsk-8080.jpe1.devtunnels.ms";
 
 function switchTab(name) {
-  playCyberSfx('switch');
   var btns = document.querySelectorAll(".nav-btn");
   btns.forEach(function(b){ b.classList.remove("active"); });
   var panes = document.querySelectorAll(".view-pane");
@@ -1115,7 +659,6 @@ function switchTab(name) {
 }
 
 function switchSpeakerSource(type) {
-  playCyberSfx('click');
   var frame = document.getElementById("frame-speaker");
   var text = document.getElementById("speaker-url-text");
   var newtab = document.getElementById("speaker-newtab");
@@ -1130,174 +673,68 @@ function switchSpeakerSource(type) {
 }
 
 function reloadSpeaker() {
-  playCyberSfx('click');
   document.getElementById("frame-speaker").src = currentSpeakerUrl;
 }
 
 /* ==========================================================
-   3. Live HUD Clock
+   Three.js Subtle Linear-Style Interactive 3D Background
+   (Tasteful, understated, organic dark particle wave)
    ========================================================== */
-function updateClock() {
-  var now = new Date();
-  var str = now.toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
-  var clockEl = document.getElementById('live-clock');
-  if (clockEl) clockEl.innerText = str;
-}
-setInterval(updateClock, 1000);
-updateClock();
-
-/* ==========================================================
-   4. 3D Card Tilt & Mouse Parallax Handler
-   ========================================================== */
-var mouseX = 0, mouseY = 0;
-var targetX = 0, targetY = 0;
-var windowHalfX = window.innerWidth / 2;
-var windowHalfY = window.innerHeight / 2;
-
-document.addEventListener('mousemove', function(e) {
-  mouseX = (e.clientX - windowHalfX);
-  mouseY = (e.clientY - windowHalfY);
-
-  document.querySelectorAll('.bento-card').forEach(function(card) {
-    var rect = card.getBoundingClientRect();
-    var x = e.clientX - rect.left;
-    var y = e.clientY - rect.top;
-    card.style.setProperty('--mouse-x', x + 'px');
-    card.style.setProperty('--mouse-y', y + 'px');
-
-    if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
-      var centerX = rect.width / 2;
-      var centerY = rect.height / 2;
-      var rotateX = ((y - centerY) / centerY) * -8;
-      var rotateY = ((x - centerX) / centerX) * 8;
-      card.style.transform = 'perspective(1000px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) translateZ(10px)';
-    } else {
-      card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)';
-    }
-  });
-});
-
-/* ==========================================================
-   5. Three.js Cybernetic 3D Matrix Visualization
-   ========================================================== */
-(function initThreeScene() {
+(function initSubtle3D() {
   if (typeof THREE === 'undefined') return;
 
   var canvas = document.getElementById('bg-canvas');
   var scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x060913, 0.0018);
+  scene.fog = new THREE.FogExp2(0x090a0f, 0.0015);
 
-  var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1500);
-  camera.position.z = 400;
-  camera.position.y = 80;
+  var camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1500);
+  camera.position.set(0, 90, 360);
 
   var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  // --- Element 1: Undulating Cyber Wave Plane ---
-  var planeWidth = 1400;
-  var planeHeight = 1400;
-  var planeSegments = 50;
-  var planeGeo = new THREE.PlaneGeometry(planeWidth, planeHeight, planeSegments, planeSegments);
-  planeGeo.rotateX(-Math.PI / 2);
+  // Subtle dark fluid wave mesh (understated, deep graphite)
+  var rows = 50, cols = 50;
+  var count = rows * cols;
+  var positions = new Float32Array(count * 3);
+  var scales = new Float32Array(count);
 
-  var posAttr = planeGeo.attributes.position;
-  var origY = new Float32Array(posAttr.count);
-  for (var i = 0; i < posAttr.count; i++) {
-    origY[i] = posAttr.getY(i);
+  var i = 0;
+  for (var ix = 0; ix < cols; ix++) {
+    for (var iy = 0; iy < rows; iy++) {
+      positions[i * 3] = ix * 24 - (cols * 24) / 2;
+      positions[i * 3 + 1] = -120;
+      positions[i * 3 + 2] = iy * 24 - (rows * 24) / 2;
+      scales[i] = 1;
+      i++;
+    }
   }
 
-  var planeMat = new THREE.MeshBasicMaterial({
-    color: 0x00f0ff,
-    wireframe: true,
+  var geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+  var material = new THREE.PointsMaterial({
+    color: 0x3b82f6,
+    size: 2.2,
     transparent: true,
-    opacity: 0.16
-  });
-  var planeMesh = new THREE.Mesh(planeGeo, planeMat);
-  planeMesh.position.y = -180;
-  scene.add(planeMesh);
-
-  // --- Element 2: Deep Cyber Starfield Particles ---
-  var particleCount = 1200;
-  var particleGeo = new THREE.BufferGeometry();
-  var particlePositions = new Float32Array(particleCount * 3);
-  var particleColors = new Float32Array(particleCount * 3);
-
-  var colorCyan = new THREE.Color(0x00f0ff);
-  var colorPurple = new THREE.Color(0xa855f7);
-  var colorGreen = new THREE.Color(0x00ff88);
-
-  for (var p = 0; p < particleCount; p++) {
-    particlePositions[p * 3] = (Math.random() - 0.5) * 1600;
-    particlePositions[p * 3 + 1] = (Math.random() - 0.5) * 1000;
-    particlePositions[p * 3 + 2] = (Math.random() - 0.5) * 1400;
-
-    var c = Math.random();
-    var chosenColor = c < 0.6 ? colorCyan : (c < 0.85 ? colorPurple : colorGreen);
-    particleColors[p * 3] = chosenColor.r;
-    particleColors[p * 3 + 1] = chosenColor.g;
-    particleColors[p * 3 + 2] = chosenColor.b;
-  }
-
-  particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-  particleGeo.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
-
-  var particleMat = new THREE.PointsMaterial({
-    size: 3.5,
-    vertexColors: true,
-    transparent: true,
-    opacity: 0.75,
+    opacity: 0.35,
     blending: THREE.AdditiveBlending
   });
-  var particles = new THREE.Points(particleGeo, particleMat);
+
+  var particles = new THREE.Points(geometry, material);
   scene.add(particles);
 
-  // --- Element 3: Holographic Rotating Tech Rings & Icosahedron ---
-  var holoGroup = new THREE.Group();
+  // Subtle mouse tracking
+  var mouseX = 0, mouseY = 0;
+  var windowHalfX = window.innerWidth / 2;
+  var windowHalfY = window.innerHeight / 2;
 
-  // Core Wireframe Icosahedron
-  var icoGeo = new THREE.IcosahedronGeometry(75, 1);
-  var icoMat = new THREE.MeshBasicMaterial({
-    color: 0x00f0ff,
-    wireframe: true,
-    transparent: true,
-    opacity: 0.35
+  document.addEventListener('mousemove', function(e) {
+    mouseX = (e.clientX - windowHalfX) * 0.08;
+    mouseY = (e.clientY - windowHalfY) * 0.08;
   });
-  var icoMesh = new THREE.Mesh(icoGeo, icoMat);
-  holoGroup.add(icoMesh);
 
-  // Inner Dodecahedron
-  var dodecaGeo = new THREE.DodecahedronGeometry(50, 0);
-  var dodecaMat = new THREE.MeshBasicMaterial({
-    color: 0xa855f7,
-    wireframe: true,
-    transparent: true,
-    opacity: 0.4
-  });
-  var dodecaMesh = new THREE.Mesh(dodecaGeo, dodecaMat);
-  holoGroup.add(dodecaMesh);
-
-  // Outer Holographic Torus Data Rings
-  var torusGeo = new THREE.TorusGeometry(120, 1.2, 16, 80);
-  var torusMat = new THREE.MeshBasicMaterial({
-    color: 0x00f0ff,
-    transparent: true,
-    opacity: 0.3,
-    wireframe: true
-  });
-  var torus1 = new THREE.Mesh(torusGeo, torusMat);
-  torus1.rotation.x = Math.PI / 3;
-  holoGroup.add(torus1);
-
-  var torus2 = new THREE.Mesh(torusGeo, torusMat);
-  torus2.rotation.y = Math.PI / 4;
-  holoGroup.add(torus2);
-
-  holoGroup.position.set(0, 40, -100);
-  scene.add(holoGroup);
-
-  // Resize handler
   window.addEventListener('resize', function() {
     windowHalfX = window.innerWidth / 2;
     windowHalfY = window.innerHeight / 2;
@@ -1306,41 +743,25 @@ document.addEventListener('mousemove', function(e) {
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
-  // Animation Loop
   var clock = new THREE.Clock();
 
   function animate() {
     requestAnimationFrame(animate);
+    var t = clock.getElapsedTime() * 0.8;
 
-    var elapsedTime = clock.getElapsedTime();
-
-    // 1. Undulate wave grid
-    var count = planeGeo.attributes.position.count;
-    for (var i = 0; i < count; i++) {
-      var x = planeGeo.attributes.position.getX(i);
-      var z = planeGeo.attributes.position.getZ(i);
-      var y = Math.sin(x * 0.015 + elapsedTime * 1.5) * 18 + Math.cos(z * 0.015 + elapsedTime * 1.2) * 18;
-      planeGeo.attributes.position.setY(i, y);
+    var pos = geometry.attributes.position.array;
+    var idx = 0;
+    for (var ix = 0; ix < cols; ix++) {
+      for (var iy = 0; iy < rows; iy++) {
+        pos[idx * 3 + 1] = (Math.sin((ix + t) * 0.3) * 14) + (Math.sin((iy + t) * 0.4) * 14) - 120;
+        idx++;
+      }
     }
-    planeGeo.attributes.position.needsUpdate = true;
+    geometry.attributes.position.needsUpdate = true;
 
-    // 2. Rotate Holographic Core
-    icoMesh.rotation.x = elapsedTime * 0.2;
-    icoMesh.rotation.y = elapsedTime * 0.3;
-    dodecaMesh.rotation.x = -elapsedTime * 0.25;
-    dodecaMesh.rotation.y = -elapsedTime * 0.35;
-    torus1.rotation.z = elapsedTime * 0.15;
-    torus2.rotation.x = elapsedTime * 0.12;
-
-    // 3. Smooth Camera Parallax Response to Mouse
-    targetX = mouseX * 0.12;
-    targetY = -mouseY * 0.12 + 60;
-    camera.position.x += (targetX - camera.position.x) * 0.04;
-    camera.position.y += (targetY - camera.position.y) * 0.04;
-    camera.lookAt(0, 0, 0);
-
-    // 4. Subtle rotation of particle field
-    particles.rotation.y = elapsedTime * 0.02;
+    camera.position.x += (mouseX - camera.position.x) * 0.03;
+    camera.position.y += (-mouseY + 80 - camera.position.y) * 0.03;
+    camera.lookAt(0, -40, 0);
 
     renderer.render(scene, camera);
   }
